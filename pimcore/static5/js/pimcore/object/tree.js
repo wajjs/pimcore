@@ -881,7 +881,9 @@ pimcore.object.tree = Class.create({
                         record.pasteProgressBar = null;
 
                         pimcore.helpers.showNotification(t("error"), t("error_pasting_object"), "error", t(message));
-                        this.parentNode.reload();
+
+                        this.refresh(record.parentNode);
+
                     }.bind(this),
                     jobs: res.pastejobs
                 });
@@ -909,7 +911,7 @@ pimcore.object.tree = Class.create({
     },
 
     importObjects: function (classId, className, tree, record) {
-        new pimcore.object.importer(record.parentNode, classId, className);
+        new pimcore.object.importer(tree, record.parentNode, classId, className);
     },
 
     addObject: function (classId, className, tree, record) {
@@ -1033,12 +1035,8 @@ pimcore.object.tree = Class.create({
                 try {
                     var rdata = Ext.decode(response.responseText);
                     if (rdata && rdata.success) {
-                        if (pimcore.globalmanager.exists("object_" + this.id)) {
-                            var tabPanel = Ext.getCmp("pimcore_panel_tabs");
-                            var tabId = "object_" + record.data.id;
-                            tabPanel.remove(tabId);
-                            pimcore.globalmanager.remove("object_" + record.data.id);
-
+                        if (pimcore.globalmanager.exists("object_" + record.id)) {
+                            pimcore.helpers.closeObject(record.data.id);
                             pimcore.helpers.openObject(record.data.id, record.data.type);
                         }
                     }

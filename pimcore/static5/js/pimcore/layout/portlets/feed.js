@@ -30,14 +30,20 @@ pimcore.layout.portlets.feed = Class.create(pimcore.layout.portlets.abstract, {
 
     getLayout: function (portletId) {
 
-        this.store = new Ext.data.JsonStore({
+        this.store = new Ext.data.Store({
             autoDestroy: true,
-            url: '/admin/portal/portlet-feed',
-            baseParams: {
-                key: this.portal.key,
-                id: portletId
+            proxy: {
+                type: 'ajax',
+                url: '/admin/portal/portlet-feed',
+                extraParams: {
+                    key: this.portal.key,
+                    id: portletId
+                },
+                reader: {
+                    type: 'json',
+                    rootProperty: 'entries'
+                }
             },
-            root: 'entries',
             fields: ['id','title',"description",'date',"link","content"]
         });
 
@@ -46,10 +52,9 @@ pimcore.layout.portlets.feed = Class.create(pimcore.layout.portlets.abstract, {
         var grid = new Ext.grid.GridPanel({
             store: this.store,
             columns: [
-                {header: t('title'), id: "title", sortable: false, dataIndex: 'title'}
+                {header: t('title'), id: "title", sortable: false, dataIndex: 'title', flex: 1}
             ],
-            stripeRows: true,
-            autoExpandColumn: 'title'
+            stripeRows: true
         });
 
         grid.on("rowclick", this.openDetail.bind(this));
@@ -58,16 +63,16 @@ pimcore.layout.portlets.feed = Class.create(pimcore.layout.portlets.abstract, {
 
         defaultConf.tools = [
             {
-                id:'gear',
+                type:'gear',
                 handler: this.editSettings.bind(this)
             },
             {
-                id:'close',
+                type:'close',
                 handler: this.remove.bind(this)
             }
         ];
 
-        this.layout = new Ext.ux.Portlet(Object.extend(defaultConf, {
+        this.layout = Ext.create('Portal.view.Portlet', Object.extend(defaultConf, {
             title: this.getName(),
             iconCls: this.getIcon(),
             height: 275,
@@ -84,7 +89,7 @@ pimcore.layout.portlets.feed = Class.create(pimcore.layout.portlets.abstract, {
             width: 600,
             height: 100,
             modal: true,
-            closeAction: "close",
+            closeAction: "destroy",
             items: [
                 {
                     xtype: "form",
@@ -96,7 +101,7 @@ pimcore.layout.portlets.feed = Class.create(pimcore.layout.portlets.abstract, {
                             id: "pimcore_portlet_feed_url",
                             fieldLabel: "Feed-URL",
                             value: this.config,
-                            width: 420
+                            width: 520
                         },
                         {
                             xtype: "button",
@@ -125,11 +130,9 @@ pimcore.layout.portlets.feed = Class.create(pimcore.layout.portlets.abstract, {
         win.show();
     },
 
-    openDetail: function (grid, rowIndex, event) {
-        var store = grid.getStore();
-        var item = store.getAt(rowIndex);
+    openDetail: function (grid, record, tr, rowIndex, e, eOpts ) {
 
-        var content = '<h1>' + item.data.title + '</h1><br /><br />' + item.data.content + '<br /><br />';
+        var content = '<h1>' + record.data.title + '</h1><br /><br />' + record.data.content + '<br /><br />';
 
         var win = new Ext.Window({
             width: 650,
@@ -143,7 +146,7 @@ pimcore.layout.portlets.feed = Class.create(pimcore.layout.portlets.abstract, {
                 {
                     text: t("view_original"),
                     handler: function () {
-                        window.open(item.data.link);
+                        window.open(record.data.link);
                     }
                 }
             ]

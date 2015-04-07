@@ -80,7 +80,7 @@ pimcore.settings.httpErrorLog = Class.create({
             {header: "Code", width: 60, sortable: true, dataIndex: 'code'},
             {header: t("path"), width: 400, sortable: true, dataIndex: 'path'},
             {header: t("amount"), width: 60, sortable: true, dataIndex: 'amount'},
-            {header: t("date"), id: "extension_description", width: 200, sortable: true, dataIndex: 'date',
+            {header: t("date"), width: 200, sortable: true, dataIndex: 'date',
                                                                     renderer: function(d) {
                 var date = new Date(d * 1000);
                 return Ext.Date.format(date, "Y-m-d H:i:s");
@@ -110,7 +110,7 @@ pimcore.settings.httpErrorLog = Class.create({
                     if (key.getKey() == key.ENTER) {
                         var input = field;
                         var val = input.getValue();
-                        this.store.baseParams.filter = val ? val : "";
+                        this.store.getProxy().extraParams.filter = val ? val : "";
                         this.store.load();
                     }
                 }.bind(this)
@@ -190,7 +190,7 @@ pimcore.settings.httpErrorLog = Class.create({
                 iconCls: "pimcore_icon_groupby",
                 enableToggle: true,
                 handler: function (button) {
-                    this.store.baseParams.group = button.pressed ? 1 : 0;
+                    this.store.getProxy().extraParams.group = button.pressed ? 1 : 0;
                     this.store.load();
                 }.bind(this)
             }, "-",{

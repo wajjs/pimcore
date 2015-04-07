@@ -161,7 +161,9 @@ pimcore.helpers.closeDocument = function (id) {
     try {
         var tabPanel = Ext.getCmp("pimcore_panel_tabs");
         var tabId = "document_" + id;
-        tabPanel.remove(tabId);
+        var panel = Ext.getCmp(tabId);
+        panel.close();
+
 
         pimcore.helpers.removeTreeNodeLoadingIndicator("document", id);
         pimcore.globalmanager.remove("document_" + id);
@@ -736,7 +738,6 @@ pimcore.helpers.deleteAssetFromServer = function (id, r, callback, button) {
                         tree.getStore().load( {
                             node: node.parentNode
                         });
-
                     }
                 }
 
@@ -765,7 +766,9 @@ pimcore.helpers.deleteAssetFromServer = function (id, r, callback, button) {
 
                 var node = pimcore.globalmanager.get("layout_asset_tree").tree.getNodeById(id);
                 if(node) {
-                    node.parentNode.reload();
+                    tree.getStore().load( {
+                        node: node.parentNode
+                    });
                 }
             }.bind(this, id),
             jobs: r.deletejobs
@@ -904,7 +907,9 @@ pimcore.helpers.deleteDocumentFromServer = function (id, r, callback, button) {
 
                 var node = pimcore.globalmanager.get("layout_document_tree").tree.getNodeById(id);
                 if(node) {
-                    node.parentNode.reload();
+                    tree.getStore().load( {
+                        node: node.parentNode
+                    });
                 }
             }.bind(this, id),
             jobs: r.deletejobs
@@ -1012,7 +1017,6 @@ pimcore.helpers.deleteObjectFromServer = function (id, r, callback, button) {
                         tree.getStore().load( {
                             node: node.parentNode
                         });
-
                     }
                 }
 
@@ -1040,7 +1044,9 @@ pimcore.helpers.deleteObjectFromServer = function (id, r, callback, button) {
 
                 var node = pimcore.globalmanager.get("layout_object_tree").tree.getNodeById(id);
                 if(node) {
-                    node.parentNode.reload();
+                    tree.getStore().load( {
+                        node: node.parentNode
+                    });
                 }
             }.bind(this, id),
             jobs: r.deletejobs
@@ -1150,7 +1156,6 @@ pimcore.helpers.assetSingleUploadDialog = function (parent, parentType, success,
     });
 
     var uploadForm = new Ext.form.FormPanel({
-        layout: "pimcoreform",
         fileUpload: true,
         width: 400,
         bodyStyle: 'padding: 10px;',
@@ -1158,7 +1163,7 @@ pimcore.helpers.assetSingleUploadDialog = function (parent, parentType, success,
             xtype: 'fileuploadfield',
             emptyText: t("select_a_file"),
             fieldLabel: t("asset"),
-            width: 230,
+            width: 330,
             name: 'Filedata',
             buttonText: "",
             buttonConfig: {
@@ -1216,7 +1221,6 @@ pimcore.helpers.uploadDialog = function (url, filename, success, failure) {
     });
 
     var uploadForm = new Ext.form.FormPanel({
-        layout: "pimcoreform",
         fileUpload: true,
         width: 400,
         bodyStyle: 'padding: 10px;',
@@ -1224,7 +1228,7 @@ pimcore.helpers.uploadDialog = function (url, filename, success, failure) {
             xtype: 'fileuploadfield',
             emptyText: t("select_a_file"),
             fieldLabel: t("file"),
-            width: 230,
+            width: 330,
             name: filename,
             buttonText: "",
             buttonConfig: {
@@ -1773,7 +1777,11 @@ pimcore.helpers.searchAndMove = function (parentId, callback, type) {
 
                 try {
                     var node = pimcore.globalmanager.get("layout_object_tree").tree.getNodeById(this.object.id);
-                    node.reload();
+                    if (node) {
+                        tree.getStore().load( {
+                            node: node
+                        });
+                    }
                 } catch (e) {
                     // node is not present
                 }
@@ -1807,7 +1815,6 @@ pimcore.helpers.sendTestEmail = function () {
         items: [{
             xtype: "form",
             bodyStyle: "padding:10px;",
-            layout: "pimcoreform",
             itemId: "form",
             items: [{
                 xtype: "textfield",

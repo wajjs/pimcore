@@ -832,11 +832,11 @@ pimcore.document.tree = Class.create({
             },
             success: function () {
                 pimcore.globalmanager.get("sites").reload();
-                this.parentNode.reload();
+                this.refresh(record.parentNode);
             }.bind(this)
         });
 
-        delete this.attributes.site;
+        delete record.data.site;
     },
 
     addUpdateSite: function (tree, record) {
@@ -932,11 +932,12 @@ pimcore.document.tree = Class.create({
                         params: data,
                         success: function (response) {
                             var site = Ext.decode(response.responseText);
-                            this.attributes.site = site;
-
-                            this.parentNode.reload();
+                            record.data.site = site;
+                            tree.getStore().load({
+                                node: record.parentNode
+                            });
                             pimcore.globalmanager.get("sites").reload();
-                        }.bind(this)
+                        }.bind(this, tree, record)
                     });
 
                     win.close();
@@ -970,7 +971,7 @@ pimcore.document.tree = Class.create({
                     fieldLabel: t('key'),
                     itemId: "key",
                     name: 'key',
-                    width: '200px',
+                    width: 300,
                     enableKeyEvents: true,
                     listeners: {
                         afterrender: function () {
@@ -985,13 +986,13 @@ pimcore.document.tree = Class.create({
                     itemId: "name",
                     fieldLabel: t('navigation'),
                     name: 'name',
-                    width: '200px'
+                    width: 300
                 },{
                     xtype: "textfield",
                     itemId: "title",
                     fieldLabel: t('title'),
                     name: 'title',
-                    width: '200px'
+                    width: 300
                 }]
             });
 
@@ -1190,23 +1191,19 @@ pimcore.document.tree = Class.create({
                 try {
                     var rdata = Ext.decode(response.responseText);
                     if (rdata && rdata.success) {
-                        if (pimcore.globalmanager.exists("document_" + this.id)) {
-                            var tabPanel = Ext.getCmp("pimcore_panel_tabs");
-                            var tabId = "document_" + this.id;
-                            tabPanel.remove(tabId);
-                            pimcore.globalmanager.remove("document_" + this.id);
-
-                            pimcore.helpers.openDocument(this.id, this.attributes.type);
+                        if (pimcore.globalmanager.exists("document_" + record.data.id)) {
+                            pimcore.helpers.closeDocument(record.data.id);
+                            pimcore.helpers.openDocument(record.id, record.data.type);
                         }
                     }
                     else {
                         pimcore.helpers.showNotification(t("error"), t("error_renaming_document"), "error",
                             t(rdata.message));
-                        this.parentNode.reload();
+                        this.refresh(record.parentNode);
                     }
                 } catch(e) {
                     pimcore.helpers.showNotification(t("error"), t("error_renaming_document"), "error");
-                    this.parentNode.reload();
+                    this.refresh(record.parentNode);
                 }
             }.bind(this));
         }
