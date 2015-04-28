@@ -210,6 +210,13 @@ class Admin_AssetController extends \Pimcore\Controller\Action\Admin\Element
             $parent = Asset::getById($this->getParam("parentId"));
             $newPath = $parent->getFullPath() . "/" . trim($this->getParam("dir"), "/ ");
 
+            // check if the path is outside of the asset directory
+            $newRealPath = PIMCORE_ASSET_DIRECTORY . $newPath;
+            $newRealPath= realpath($newRealPath);
+            if (strpos($newRealPath, PIMCORE_ASSET_DIRECTORY) !== 0) {
+                throw new Exception("not allowed");
+            }
+
             $maxRetries = 5;
             for ($retries=0; $retries<$maxRetries; $retries++) {
                 try {
@@ -1577,7 +1584,8 @@ class Admin_AssetController extends \Pimcore\Controller\Action\Admin\Element
                 //TODO probably not needed
             }
         } else {
-            // get list of objects
+            $db = \Pimcore\Resource::get();
+                // get list of objects
             $folder = Asset::getById($this->getParam("folderId"));
 
 
@@ -1658,7 +1666,7 @@ class Admin_AssetController extends \Pimcore\Controller\Action\Admin\Element
                         $field = "CONCAT(path,filename)";
                     }
 
-                    $conditionFilters[] =  $field . $operator . " '" . $value . "' ";
+                    $conditionFilters[] =  $field . $operator . " " . $db->quote($value);
                 }
             }
 

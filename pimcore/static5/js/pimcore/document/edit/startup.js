@@ -27,6 +27,7 @@ if (!console) {
 
 // some globals
 var editables = [];
+var editablesReady = false;
 var editableNames = [];
 var editWindow;
 
@@ -136,6 +137,8 @@ Ext.onReady(function () {
             }
         }
 
+        editablesReady = true;
+
         // add lazyload styles
         // this is necessary, because otherwise ext will overwrite many default styles (reset.css)
         // and then the style detection of eg. input, textarea editable isn't accurate anymore
@@ -161,7 +164,7 @@ Ext.onReady(function () {
                         target: tmpEl,
                         showDelay: 100,
                         anchor: "left",
-                        title: t("click_right_for_more_options")
+                        html: t("click_right_for_more_options")
                     });
                 }
 

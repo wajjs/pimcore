@@ -166,17 +166,31 @@ Ext.onReady(function () {
         if (xhrActive < 1) {
             Ext.get("pimcore_logo").dom.innerHTML = '<img class="logo" src="/pimcore/static/img/logo.png"/>';
         }
-    });
+        var sb = pimcore.globalmanager.get("statusbar");
+        if (sb) {
+            sb.clearStatus();
+        }
+        });
     Ext.Ajax.on("beforerequest", function () {
         if (xhrActive < 1) {
             Ext.get("pimcore_logo").dom.innerHTML = '<img class="activity" src="/pimcore/static/img/loading.gif"/>';
         }
         xhrActive++;
+        var sb = pimcore.globalmanager.get("statusbar");
+        if (sb) {
+            sb.setStatus({
+                text: t('loading')
+            });
+        }
     });
     Ext.Ajax.on("requestcomplete", function (conn, response, options) {
         xhrActive--;
         if (xhrActive < 1) {
             Ext.get("pimcore_logo").dom.innerHTML = '<img class="logo" src="/pimcore/static/img/logo.png"/>';
+        }
+        var sb = pimcore.globalmanager.get("statusbar");
+        if (sb) {
+            sb.clearStatus();
         }
 
         // redirect to login-page if session is expired
@@ -383,8 +397,9 @@ Ext.onReady(function () {
 
     // STATUSBAR
     var statusbar = Ext.create('Ext.ux.StatusBar', {
-        id:'pimcore_statusbar',
-        statusAlign:'right'
+        id: 'pimcore_statusbar',
+        statusAlign: 'left',
+        cls: 'pimcore_statusbar_text'
     });
     pimcore.globalmanager.add("statusbar", statusbar);
 
@@ -399,6 +414,13 @@ Ext.onReady(function () {
         statusbar.add('<div class="pimcore_statusbar_debug">' + t("debug_mode_on") + "</div>");
         statusbar.add("-");
     }
+
+    // check for debug
+    if (pimcore.settings.debug) {
+        statusbar.add('<div class="pimcore_statusbar_extjs5">ExtJS 5 - Beta Feauture </div>');
+        statusbar.add("-");
+    }
+
     // check for maintenance
     if (!pimcore.settings.maintenance_active) {
         statusbar.add('<div class="pimcore_statusbar_maintenance">'
@@ -484,6 +506,7 @@ Ext.onReady(function () {
                             plugins:
                                 [
                                 Ext.create('Ext.ux.TabCloseMenu', {
+                                        pluginId: 'tabclosemenu',
                                         showCloseAll: false,
                                         showCloseOthers: false,
                                         extraItemsTail: pimcore.helpers.getMainTabMenuItems()

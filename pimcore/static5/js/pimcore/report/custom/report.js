@@ -45,6 +45,7 @@ pimcore.report.custom.report = Class.create(pimcore.report.abstract, {
         var filters = [];
         var drillDownFilterDefinitions = [];
         this.columnLabels = {};
+        this.gridfilters = {};
 
         for(var f=0; f<data.columnConfiguration.length; f++) {
             colConfig = data.columnConfiguration[f];
@@ -56,8 +57,7 @@ pimcore.report.custom.report = Class.create(pimcore.report.abstract, {
                 header: colConfig["label"] ? ts(colConfig["label"]) : ts(colConfig["name"]),
                 hidden: !colConfig["display"],
                 sortable: colConfig["order"],
-                dataIndex: colConfig["name"],
-                filterable: false
+                dataIndex: colConfig["name"]
             };
 
             if(colConfig["width"]) {
@@ -65,12 +65,8 @@ pimcore.report.custom.report = Class.create(pimcore.report.abstract, {
             }
 
             if(colConfig["filter"]) {
-                filters.push({
-                    dataIndex: colConfig["name"],
-                    type: colConfig["filter"]
-                });
-
-                gridColConfig["filterable"] = true;
+                gridColConfig["filter"] = colConfig["filter"];
+                this.gridfilters[colConfig["name"]] = colConfig["filter"];
             }
 
 
@@ -84,12 +80,6 @@ pimcore.report.custom.report = Class.create(pimcore.report.abstract, {
 
         }
 
-        this.gridFilters = new Ext.ux.grid.GridFilters({
-            filters: filters,
-            encode: true,
-            local: false
-        });
-
         this.store = new Ext.data.JsonStore({
             autoDestroy: true,
             proxy: {
@@ -102,7 +92,7 @@ pimcore.report.custom.report = Class.create(pimcore.report.abstract, {
             remoteSort: true,
             listeners: {
                 load: function() {
-                    var filterData = this.gridFilters.getFilterData();
+                    var filterData = this.store.getFilters();
 
                     if(this.chartStore) {
                         this.chartStore.load({
@@ -176,7 +166,8 @@ pimcore.report.custom.report = Class.create(pimcore.report.abstract, {
             iconCls: "pimcore_icon_export",
             handler: function () {
                 var query = "";
-                var filterData = this.gridFilters.getFilterData();
+                var filterData = this.store.getFilters();
+
                 if(filterData.length > 0) {
                     query = "filter=" + encodeURIComponent(this.gridFilters.buildQuery(filterData).filter);
                 } else {
@@ -207,7 +198,7 @@ pimcore.report.custom.report = Class.create(pimcore.report.abstract, {
             bbar: this.pagingtoolbar,
             columns: gridColums,
             columnLines: true,
-            plugins: [this.gridFilters],
+            plugins: ['gridfilters'],
             stripeRows: true,
             trackMouseOver: true,
             viewConfig: {
